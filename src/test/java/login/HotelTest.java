@@ -43,7 +43,7 @@ public class HotelTest {
     }
 
     @After
-    public void po³¹czenie() {
+    public void tearDown() {
 
         driver.quit();
     }
