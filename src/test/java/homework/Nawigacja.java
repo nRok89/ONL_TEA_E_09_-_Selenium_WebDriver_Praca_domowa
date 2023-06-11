@@ -6,6 +6,11 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 
 public class Nawigacja {
     public static void main(String[] args) {
+
+        Petent user = new Petent();
+        System.out.println(user.name);
+
+
         System.setProperty("webdriver.gecko.driver", "src/main/resources/drivers/geckodriver.exe");
         WebDriver driver = new FirefoxDriver();
         driver.manage().window().maximize();

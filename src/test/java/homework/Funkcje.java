@@ -40,7 +40,8 @@ public class Funkcje {
 
 // strona sie ładuje i nie moża odrazu wpisywać danych
 // czekam max sekunde za elementem az sie załaduje
-        WebElement czekam = new WebDriverWait(driver,1)
+        WebElement czekam;
+        czekam = new WebDriverWait(driver,1)
                 .until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"submitAccount\"]")));
 
 
