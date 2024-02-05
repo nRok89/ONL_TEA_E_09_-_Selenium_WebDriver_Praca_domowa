@@ -8,17 +8,27 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 public class CustomFindByExample {
 
     // Statyczna instancja WebDrivera
-    private static WebDriver driver;
+    private static WebDriver driver = getDriver();
+
+    // Metoda zwracaj¹ca instancjê WebDrivera (Singleton)
+    private static WebDriver getDriver() {
+        if (driver == null) {
+            // Inicjalizacja WebDrivera (pamiêtaj o dostosowaniu œcie¿ki do sterownika przegl¹darki)
+            System.setProperty("webdriver.chrome.driver", "œcie¿ka/do/sterownika/chromedriver.exe");
+            driver = new ChromeDriver();
+        }
+        return driver;
+    }
 
     public static void main(String[] args) {
-        // Inicjalizacja WebDrivera (pamiêtaj o dostosowaniu œcie¿ki do sterownika przegl¹darki)
-        System.setProperty("webdriver.chrome.driver", "œcie¿ka/do/sterownika/chromedriver.exe");
-        driver = new ChromeDriver();
-
         // Tworzenie obiektu klasy YourPageObject
         YourPageObject pageObject = new YourPageObject();
 
@@ -94,6 +104,32 @@ public class CustomFindByExample {
         public void performSomeAction() {
             // Przyk³adowa akcja na elemencie
             getUsernameField().click();
+        }
+    }
+
+    // Dodana klasa CustomFindBy do obs³ugi inicjalizacji elementów
+    public static class CustomFindBy {
+        public static void initElements(CustomFindByFactory factory, Object page) {
+            Class<?> pageClass = page.getClass();
+            Field[] fields = pageClass.getDeclaredFields();
+
+            for (Field field : fields) {
+                if (field.isAnnotationPresent(CustomFindBy.class)) {
+                    field.setAccessible(true);
+                    try {
+                        Object proxy = CustomFindBy.initElement(factory, field.getAnnotation(CustomFindBy.class));
+                        field.set(page, proxy);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        private static Object initElement(CustomFindByFactory factory, CustomFindBy customFindBy) {
+            InvocationHandler handler = new CustomHandler(factory);
+            ClassLoader loader = CustomFindBy.class.getClassLoader();
+            return Proxy.newProxyInstance(loader, new Class[]{WebElement.class}, handler);
         }
     }
 }
